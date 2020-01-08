@@ -66,6 +66,9 @@ class MainWindow {
 
   virtual void QueueUIThreadCallback(int msg_id, void* data) = 0;
   virtual HWND GetHwnd() = 0;
+
+  //by water
+  virtual void SetRoom(std::string room) = 0;
 };
 
 #ifdef WIN32
@@ -98,12 +101,17 @@ class MainWnd : public MainWindow {
 
   HWND handle() const { return wnd_; }
 
+  //by water
+  virtual void SetRoom(std::string room);
+
  protected:
   enum ChildWindowID {
     EDIT_ID = 1,
+	EDIT2_ID,
     BUTTON_ID,
     LABEL1_ID,
     LABEL2_ID,
+	LABEL3_ID,
     LISTBOX_ID,
   };
 
@@ -136,8 +144,10 @@ class MainWnd : public MainWindow {
   DWORD ui_thread_id_;
   HWND edit1_;
   HWND edit2_;
+  HWND edit3_;
   HWND label1_;
   HWND label2_;
+  HWND label3_;
   HWND button_;
   HWND listbox_;
   bool destroyed_;

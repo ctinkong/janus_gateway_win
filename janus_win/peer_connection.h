@@ -32,7 +32,8 @@ enum CallbackID {
 	TRACK_REMOVED,
 	CREATE_OFFER,//added by pcg
 	SET_REMOTE_ANSWER,//added by pcg
-	SET_REMOTE_OFFER
+	SET_REMOTE_OFFER ,
+	CREATE_ROOM
 };
 
 struct NEW_TRACK {

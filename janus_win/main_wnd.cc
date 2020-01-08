@@ -76,8 +76,10 @@ MainWnd::MainWnd(const char* server,
       wnd_(NULL),
       edit1_(NULL),
       edit2_(NULL),
+	  edit3_(NULL),
       label1_(NULL),
       label2_(NULL),
+	  label3_(NULL),
       button_(NULL),
       listbox_(NULL),
       destroyed_(false),
@@ -379,6 +381,7 @@ void MainWnd::OnDefaultAction() {
   if (ui_ == CONNECT_TO_SERVER) {
     std::string server(GetWindowText(edit1_));
     std::string port_str(GetWindowText(edit2_));
+	std::string room_str(GetWindowText(edit3_));
     int port = port_str.length() ? atoi(port_str.c_str()) : 0;
     callback_->StartLogin(server, port);
   } /*else if (ui_ == LIST_PEERS) {
@@ -427,7 +430,7 @@ bool MainWnd::OnMessage(UINT msg, WPARAM wp, LPARAM lp, LRESULT* result) {
     case WM_COMMAND:
       if (button_ == reinterpret_cast<HWND>(lp)) {
         if (BN_CLICKED == HIWORD(wp))
-          OnDefaultAction();
+          OnDefaultAction();//by water µÇÂ¼°´Å¥
       } /*else if (listbox_ == reinterpret_cast<HWND>(lp)) {
         if (LBN_DBLCLK == HIWORD(wp)) {
           OnDefaultAction();
@@ -523,6 +526,9 @@ void MainWnd::CreateChildWindows() {
   CreateChildWindow(&label2_, LABEL2_ID, L"Static", ES_CENTER | ES_READONLY, 0);
   CreateChildWindow(&edit2_, EDIT_ID, L"Edit",
                     ES_LEFT | ES_NOHIDESEL | WS_TABSTOP, WS_EX_CLIENTEDGE);
+  CreateChildWindow(&label3_, LABEL3_ID, L"Static", ES_CENTER | ES_READONLY, 0);
+  CreateChildWindow(&edit3_, EDIT2_ID, L"Edit",
+					ES_LEFT | ES_NOHIDESEL | WS_TABSTOP, WS_EX_CLIENTEDGE);
   CreateChildWindow(&button_, BUTTON_ID, L"Button", BS_CENTER | WS_TABSTOP, 0);
 
   CreateChildWindow(&listbox_, LISTBOX_ID, L"ListBox",
@@ -530,6 +536,12 @@ void MainWnd::CreateChildWindows() {
 
   ::SetWindowTextA(edit1_, server_.c_str());
   ::SetWindowTextA(edit2_, port_.c_str());
+  ::SetWindowTextA(edit3_, "1234");
+}
+
+void MainWnd::SetRoom(std::string room) {
+
+	::SetWindowTextA(edit3_, room.c_str());
 }
 
 void MainWnd::LayoutConnectUI(bool show) {
@@ -541,6 +553,7 @@ void MainWnd::LayoutConnectUI(bool show) {
   } windows[] = {
       {label1_, L"Server"},  {edit1_, L"XXXyyyYYYgggXXXyyyYYYggg"},
       {label2_, L":"},       {edit2_, L"XyXyX"},
+	  {label3_, L":"},       {edit3_, L"XXXyyyYYYgggXXXyyyYYYggg"},
       {button_, L"Connect"},
   };
 

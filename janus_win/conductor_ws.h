@@ -106,6 +106,10 @@ protected:
 	void PCTrickleCandidateComplete(long long int handleId);
 
 protected:
+	//by water
+	unsigned long long my_room;
+	bool is_create_room;
+
 	int peer_id_;
 	bool loopback_;
 	//rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
@@ -124,6 +128,7 @@ protected:
 		void KeepAlive();
 		void CreateSession();
 		void CreateHandle(std::string pluginName, long long int feedId, std::string display);
+		void CreateRoom(std::string pluginName, long long int handleId, long long int feedId, std::string display);
 		void JoinRoom(std::string pluginName, long long int handleId, long long int feedId);
 		void SendOffer(long long int handleId, std::string sdp_type, std::string sdp_desc);
 		void SendAnswer(long long int handleId, std::string sdp_type, std::string sdp_desc);

@@ -76,6 +76,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\third_party\webrtc;..\third_party\webrtc\third_party;..\third_party\webrtc\third_party\abseil-cpp;..\third_party\webrtc\third_party\libyuv\include;..\third_party\uwebsockets\include;..\third_party\libuv\include;..\third_party\openssl\include;..\third_party\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

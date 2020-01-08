@@ -34,7 +34,7 @@ Json::Value optJSONValue(std::string message, list<string> keyList);
 
 
 ConductorWs::ConductorWs(PeerConnectionWsClient* client, MainWindow* main_wnd)
-	: peer_id_(-1), loopback_(false), client_(client), main_wnd_(main_wnd) {
+	: my_room(0), is_create_room(false), peer_id_(-1), loopback_(false), client_(client), main_wnd_(main_wnd) {
 	client_->RegisterObserver(this);
 	main_wnd->RegisterObserver(this);
 	this->MainWnd_=main_wnd->GetHwnd();
@@ -337,6 +337,14 @@ void ConductorWs::UIThreadCallback(int msg_id, void* data) {
 		//peerConnection.createAnswer(connection.sdpObserver, sdpMediaConstraints);
 		break;
 	}
+	case CREATE_ROOM: {
+		if (main_wnd_->IsWindow()) {
+			char szRoom[1024];
+			snprintf(szRoom, sizeof(szRoom), "%lld", my_room);
+			main_wnd_->SetRoom(szRoom);			
+		}
+		break;
+	}
 
 	default:
 		RTC_NOTREACHED();
@@ -592,13 +600,20 @@ void ConductorWs::CreateHandle(std::string pluginName, long long int feedId, std
 	jt->Success = [=](std::string message) {
 		list<string> handleList = { "data","id" };
 		long long int handle_id = OptLLInt(message, handleList);
-		//add handle to the map
-		std::shared_ptr<JanusHandle> jh(new JanusHandle());
-		jh->handleId = handle_id;
-		jh->display = display;
-		jh->feedId = feedId;
-		m_handleMap[handle_id] = jh;
-		JoinRoom(pluginName, handle_id, feedId);//TODO feedid means nothing in echotest,else?
+		if (my_room > 0)
+		{
+			//add handle to the map
+ 			std::shared_ptr<JanusHandle> jh(new JanusHandle());
+ 			jh->handleId = handle_id;
+ 			jh->display = display;
+ 			jh->feedId = feedId;
+ 			m_handleMap[handle_id] = jh;
+			JoinRoom(pluginName, handle_id, feedId);//TODO feedid means nothing in echotest,else?
+		}
+		else
+		{
+			CreateRoom(pluginName, handle_id, feedId, display);//TODO feedid means nothing in echotest,else?
+		}
 	};
 
 	jt->Event = [=](std::string message) {
@@ -618,6 +633,56 @@ void ConductorWs::CreateHandle(std::string pluginName, long long int feedId, std
 	jmessage["transaction"] = transactionID;
 	jmessage["session_id"] = m_SessionId;
 	client_->SendToJanus(writer.write(jmessage));
+}
+
+void ConductorWs::CreateRoom(std::string pluginName, long long int handleId, long long int feedId, std::string display) {
+	std::string transactionID = RandomString(12);
+	std::shared_ptr<JanusTransaction> jt(new JanusTransaction());
+	jt->transactionId = transactionID;
+
+	jt->Success = [=](std::string message) {
+		//get sender
+		list<string> senderList = { "sender" };
+		long long int sender = OptLLInt(message, senderList);
+		//get room		
+		list<string> roomList = { "plugindata","data","room" };
+		my_room = OptLLInt(message, roomList);
+
+		if (my_room > 0 ) {
+			is_create_room = true;
+			main_wnd_->QueueUIThreadCallback(CREATE_ROOM, (void*)(&handleId));
+			//report room succ
+
+		}
+		//joined the room
+		list<string> handleList = { "data","id" };
+		//add handle to the map
+		std::shared_ptr<JanusHandle> jh(new JanusHandle());
+		jh->handleId = handleId;
+		jh->display = display;
+		jh->feedId = feedId;
+		m_handleMap[handleId] = jh;
+		JoinRoom(pluginName, handleId, feedId);//TODO feedid means nothing in echotest,else?
+	};
+
+	m_transactionMap[transactionID] = jt;
+
+	Json::StyledWriter writer;
+	Json::Value jmessage;
+	Json::Value jbody;
+	if (pluginName == "janus.plugin.videoroom") {
+		jbody["request"] = "create";
+		jbody["description"] = "ispeed.com";//by water <pretty name of the room, optional>
+		//jbody["pin"] = "ispeed.com";//by water <password required to join the room, optional>
+		//jbody["room"] = 1234;//FIXME should be variable		
+		jmessage["body"] = jbody;
+		jmessage["janus"] = "message";
+		jmessage["transaction"] = transactionID;
+		jmessage["session_id"] = m_SessionId;
+		jmessage["handle_id"] = handleId;
+		client_->SendToJanus(writer.write(jmessage));
+		//After joined,Then create offer
+	}
 }
 
 
@@ -668,7 +733,7 @@ void ConductorWs::JoinRoom(std::string pluginName,long long int handleId,long lo
 	Json::Value jbody;
 	if (pluginName == "janus.plugin.videoroom") {
 		jbody["request"] = "join";
-		jbody["room"] = 1234;//FIXME should be variable
+		jbody["room"] = my_room;//FIXME should be variable
 		if (feedId == 0) {
 			jbody["ptype"] = "publisher";
 			jbody["display"] = "pcg";//FIXME should be variable
