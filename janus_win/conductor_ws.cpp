@@ -673,6 +673,7 @@ void ConductorWs::CreateRoom(std::string pluginName, long long int handleId, lon
 	if (pluginName == "janus.plugin.videoroom") {
 		jbody["request"] = "create";
 		jbody["description"] = "ispeed.com";//by water <pretty name of the room, optional>
+		jbody["videocodec"] = "h264";//by water
 		//jbody["pin"] = "ispeed.com";//by water <password required to join the room, optional>
 		//jbody["room"] = 1234;//FIXME should be variable		
 		jmessage["body"] = jbody;
@@ -794,6 +795,8 @@ void ConductorWs::SendOffer(long long int handleId, std::string sdp_type,std::st
 	jbody["request"] = "configure";
 	jbody["audio"] = true;
 	jbody["video"] = true;
+	////by water
+	//jbody["videocodec"] = "h264";
 
 	jjsep["type"] = sdp_type;
 	jjsep["sdp"] = sdp_desc;
@@ -824,8 +827,11 @@ void ConductorWs::SendAnswer(long long int handleId, std::string sdp_type, std::
 	Json::Value jbody;
 	Json::Value jjsep;
 
+	char str_room[1024] = { 0 };
+	snprintf(str_room, sizeof(str_room), "%llu", my_room);
+
 	jbody["request"] = "start";
-	jbody["room"] = "1234";
+	jbody["room"] = str_room;
 
 	jjsep["type"] = sdp_type;
 	jjsep["sdp"] = sdp_desc;
