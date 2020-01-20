@@ -796,7 +796,7 @@ void ConductorWs::SendOffer(long long int handleId, std::string sdp_type,std::st
 	jbody["audio"] = true;
 	jbody["video"] = true;
 	////by water
-	//jbody["videocodec"] = "h264";
+	jbody["data"] = true;
 
 	jjsep["type"] = sdp_type;
 	jjsep["sdp"] = sdp_desc;
